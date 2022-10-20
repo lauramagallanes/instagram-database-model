@@ -1,33 +1,75 @@
 import os
 import sys
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Table
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy import create_engine
 from eralchemy import render_er
 
+
+
 Base = declarative_base()
 
-class Person(Base):
-    __tablename__ = 'person'
-    # Here we define columns for the table person
-    # Notice that each column is also a normal Python instance attribute.
-    id = Column(Integer, primary_key=True)
-    name = Column(String(250), nullable=False)
+PostGuardado = Table("posts_guardados", Base.metadata,
+    Column("id", Integer, primary_key=True),
+    Column("posts_id", Integer, ForeignKey("posts.id")),
+    Column("usuarios_id", Integer, ForeignKey("usuarios.id"))
+    
+)
 
-class Address(Base):
-    __tablename__ = 'address'
-    # Here we define columns for the table address.
-    # Notice that each column is also a normal Python instance attribute.
+class Usuario(Base):
+    __tablename__ = 'usuarios'
+    
     id = Column(Integer, primary_key=True)
-    street_name = Column(String(250))
-    street_number = Column(String(250))
-    post_code = Column(String(250), nullable=False)
-    person_id = Column(Integer, ForeignKey('person.id'))
-    person = relationship(Person)
+    first_name = Column(String(250), nullable=False)
+    last_name = Column(String(250), nullable=False)
+    email = Column(String(250), nullable=False)
+    password = Column(String(250), nullable=False)
+    user_name = Column(String(250), nullable=False)
+    cel = Column(Integer, nullable=False)
+    fecha_nacimiento = Column(DateTime, nullable=False)
+    posts = relationship('Post', backref='usuarios', lazy=True)
+    historias = relationship('Historia', backref='usuarios', lazy=True)
+    
 
-    def to_dict(self):
-        return {}
+class Post(Base):
+    __tablename__ = 'posts'
+    
+    id = Column(Integer, primary_key=True)
+    titulo = Column(String(250), nullable=False)
+    Fecha = Column(DateTime, nullable=False) 
+    Hora = Column(DateTime, nullable=False)
+    contenido = Column(String(250), nullable=False)
+    multimedia = Column(String(250), nullable=False)
+    etiquetas = Column(Integer, nullable=False)
+    hashtag = Column(DateTime, nullable=False)
+    usuarios_ID = Column(Integer, ForeignKey("usuarios.id"))
+    posts_guardados = relationship('Usuario', secondary=PostGuardado, lazy="subquery", backref=backref('posts', lazy=True))
+   
+    
+
+
+class Historia(Base):
+    __tablename__ = 'historias'
+    
+    id = Column(Integer, primary_key=True)
+    titulo = Column(String(250), nullable=False)
+    Fecha = Column(DateTime, nullable=False)
+    Hora = Column(DateTime, nullable=False)
+    contenido = Column(String(250), nullable=False)
+    multimedia = Column(String(250), nullable=False)
+    etiquetas = Column(Integer, nullable=False)
+    hashtag = Column(DateTime, nullable=False)
+    Usuario_ID = Column(Integer, ForeignKey("usuarios.id"))
+
+
+
+
+   
+
+
+
+
 
 ## Draw from SQLAlchemy base
 render_er(Base, 'diagram.png')
